@@ -2,6 +2,10 @@
 
 Editor y visor de Markdown de escritorio para Windows y macOS, con vistas Formato (WYSIWYG) y Sin formato, pestañas, y tres paletas de color con modo claro/oscuro.
 
+## Descargar
+
+Instaladores para Windows (`.exe`) y macOS (`.dmg`) en [Releases](https://github.com/eBrainiac/MDviedit/releases/latest).
+
 ## Requisitos
 
 - [pnpm](https://pnpm.io/)
