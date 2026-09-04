@@ -1,0 +1,40 @@
+/*
+ * Paleta B — "Cálida + terracota" (predeterminada, estilo Claude).
+ * Fuente: UI-DESIGN-SYSTEM.md §4.1. Activada con [data-palette="b"] en <html>.
+ * Tokens semánticos: los componentes solo usan estos, nunca colores directos.
+ */
+
+/* [data-palette-preview] es aditivo (IT-5, PreferencesView): ver a.css. */
+:root[data-palette="b"][data-theme="light"],
+[data-palette-preview="b"][data-theme="light"] {
+  --c-bg: #FBF9F4;
+  --c-bg-elev: #F1EDE4;
+  --c-bg-hover: #E6E0D3;
+  --c-bg-active: #FBF9F4;
+  --c-border: #D9D2C3;
+  --c-text: #2B2722;
+  --c-text-muted: #77706A;
+  --c-accent: #BC562E;
+  --c-accent-contrast: #FFF;
+  --c-dirty: #C98A00;
+  --c-danger: #C0392B;
+  --c-code-bg: #EFE9DD;
+  --c-selection: rgb(208 103 62 / 25%);
+}
+
+:root[data-palette="b"][data-theme="dark"],
+[data-palette-preview="b"][data-theme="dark"] {
+  --c-bg: #1F1D1A;
+  --c-bg-elev: #292623;
+  --c-bg-hover: #35312C;
+  --c-bg-active: #1F1D1A;
+  --c-border: #3F3A34;
+  --c-text: #E6E0D6;
+  --c-text-muted: #A39C92;
+  --c-accent: #E88A5E;
+  --c-accent-contrast: #1F1D1A;
+  --c-dirty: #E9B44C;
+  --c-danger: #FF7B6B;
+  --c-code-bg: #2E2A26;
+  --c-selection: rgb(232 138 94 / 30%);
+}

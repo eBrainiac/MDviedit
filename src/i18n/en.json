@@ -1,0 +1,126 @@
+{
+  "window": {
+    "titleWithFile": "{file} — MDviedit",
+    "titleEmpty": "MDviedit"
+  },
+  "tab": {
+    "untitled": "Untitled {n}",
+    "menuLabel": "Tab context menu",
+    "close": "Close",
+    "closeOthers": "Close others",
+    "closeAll": "Close all",
+    "closeRight": "Close to the right",
+    "copyPath": "Copy path",
+    "showInFolderWin": "Show in Explorer",
+    "showInFolderMac": "Show in Finder",
+    "scrollLeft": "Scroll tabs left",
+    "scrollRight": "Scroll tabs right",
+    "resizeHandle": "Resize tab"
+  },
+  "dock": {
+    "label": "Action dock",
+    "menuLabel": "Dock position",
+    "new": "New",
+    "open": "Open",
+    "save": "Save",
+    "saveAs": "Save as",
+    "close": "Close",
+    "theme": "Theme",
+    "preferences": "Preferences",
+    "dragHandle": "Drag to relocate the dock"
+  },
+  "topRow": {
+    "formatToggle": "Show or hide the format toolbar",
+    "viewToggleFormatted": "Formatted",
+    "viewToggleRaw": "Raw",
+    "viewToggleLabel": "Document view"
+  },
+  "toolbar": {
+    "more": "More formatting options",
+    "bold": "Bold",
+    "italic": "Italic",
+    "strikethrough": "Strikethrough",
+    "inlineCode": "Inline code",
+    "heading": "Heading",
+    "heading1": "Heading 1",
+    "heading2": "Heading 2",
+    "heading3": "Heading 3",
+    "headingClear": "Clear heading",
+    "list": "List",
+    "listOrdered": "Numbered list",
+    "task": "Task",
+    "quote": "Quote",
+    "link": "Link",
+    "image": "Image",
+    "codeBlock": "Code block",
+    "table": "Table",
+    "hr": "Horizontal rule"
+  },
+  "emptyState": {
+    "text": "Create or open a file"
+  },
+  "formattedPlaceholder": {
+    "text": "The Formatted view isn't available in this build yet.",
+    "switchToRaw": "Switch to Raw"
+  },
+  "largeFile": {
+    "notice": "Large file: the Formatted view may be slow",
+    "openAnyway": "Open in Formatted anyway"
+  },
+  "dialog": {
+    "save": "Save",
+    "dontSave": "Don't save",
+    "cancel": "Cancel",
+    "reload": "Reload",
+    "keep": "Keep",
+    "closeDirtyTitle": "Unsaved changes",
+    "closeDirtyMessage": "\"{file}\" has unsaved changes. Do you want to save them?",
+    "fileChangedMessage": "The file changed on disk. Reload or keep your version?",
+    "fileChangedDirtyMessage": "The file changed on disk and the tab has unsaved changes. Reload or keep your version?",
+    "ioErrorTitle": "I/O error",
+    "ioErrorRead": "Couldn't open \"{file}\". It may have been moved, deleted, or you may not have permission to access it.",
+    "ioErrorWrite": "Couldn't save \"{file}\". It may have been moved or deleted since you opened it. Use \"Save as\" to pick a new location.",
+    "dockPromptMessage": "Keep MDviedit in the Dock?",
+    "dockPromptDontAskAgain": "Don't ask again",
+    "installPathCommandFailed": "Couldn't install the command automatically. Copy and run:"
+  },
+  "statusBar": {
+    "dirty": "● Unsaved",
+    "saved": "Saved"
+  },
+  "preferences": {
+    "tabTitle": "Preferences",
+    "sectionAppearance": "Appearance",
+    "sectionLayout": "Layout",
+    "sectionEditor": "Editor",
+    "sectionFiles": "Files",
+    "sectionSystem": "System",
+    "sectionGeneral": "General",
+    "themeModeSystem": "System",
+    "themeModeLight": "Light",
+    "themeModeDark": "Dark",
+    "themeMode": "Mode",
+    "paletteLabel": "Palette",
+    "paletteA": "Gray + blue",
+    "paletteB": "Warm + terracotta",
+    "paletteC": "Cool + teal",
+    "editorFontSize": "Editor font size",
+    "editorFontSizeDecrease": "Decrease font size",
+    "editorFontSizeIncrease": "Increase font size",
+    "dockPosition": "Dock position",
+    "dockPositionRight": "Right",
+    "dockPositionLeft": "Left",
+    "dockPositionTop": "Top",
+    "dockPositionBottom": "Bottom",
+    "formatToolbarVisible": "Show format toolbar on startup",
+    "lineNumbers": "Line numbers in Raw view",
+    "defaultViewMode": "Default view when opening files",
+    "watchFiles": "Warn when a file changes on disk",
+    "installPathCommand": "Install \"mdviedit\" command in PATH",
+    "showDockPromptAgain": "Show the Dock prompt again",
+    "locale": "Language",
+    "localeEsMx": "Español (México)",
+    "localeEn": "English",
+    "reset": "Reset to defaults"
+  }
+}

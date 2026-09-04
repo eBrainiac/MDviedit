@@ -1,0 +1,40 @@
+/*
+ * Paleta C — "Fría + teal" (Obsidian / Notion).
+ * Fuente: UI-DESIGN-SYSTEM.md §4.3. Activada con [data-palette="c"] en <html>.
+ * Tokens semánticos: los componentes solo usan estos, nunca colores directos.
+ */
+
+/* [data-palette-preview] es aditivo (IT-5, PreferencesView): ver a.css. */
+:root[data-palette="c"][data-theme="light"],
+[data-palette-preview="c"][data-theme="light"] {
+  --c-bg: #FFF;
+  --c-bg-elev: #F4F6F7;
+  --c-bg-hover: #E6EAEC;
+  --c-bg-active: #FFF;
+  --c-border: #D6DBDE;
+  --c-text: #1D2326;
+  --c-text-muted: #66727A;
+  --c-accent: #0E8284;
+  --c-accent-contrast: #FFF;
+  --c-dirty: #D99A00;
+  --c-danger: #C74343;
+  --c-code-bg: #EEF2F3;
+  --c-selection: rgb(15 139 141 / 25%);
+}
+
+:root[data-palette="c"][data-theme="dark"],
+[data-palette-preview="c"][data-theme="dark"] {
+  --c-bg: #1B1F22;
+  --c-bg-elev: #22272B;
+  --c-bg-hover: #2C3338;
+  --c-bg-active: #1B1F22;
+  --c-border: #353D43;
+  --c-text: #D6DCE0;
+  --c-text-muted: #96A0A8;
+  --c-accent: #3FC1C0;
+  --c-accent-contrast: #0B1A1A;
+  --c-dirty: #F0C050;
+  --c-danger: #FF6E6E;
+  --c-code-bg: #262C31;
+  --c-selection: rgb(63 193 192 / 30%);
+}

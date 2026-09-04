@@ -1,0 +1,108 @@
+/*
+ * Tokens de UI — MDviedit.
+ * Fuente: UI-DESIGN-SYSTEM.md §1-3, §5-9 (docs, versión 0.2.0, aprobado PD-30…45).
+ * Valores no dependientes de paleta/tema. Los colores dependientes de paleta
+ * viven en src/config/palettes/{a,b,c}.css.
+ * RULE-001/CFG-001: ningún componente declara estos valores como literales.
+ */
+
+:root {
+  /* §1 Espaciado (escala base 4) */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* §2 Tipografía */
+  --font-ui: system-ui, "Segoe UI", -apple-system, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", "SF Mono", menlo, monospace;
+  --font-content: var(--font-ui);
+  --fs-ui: 13px;
+  --fs-status: 11px;
+  --fs-editor: 14px;
+  --fs-editor-min: 10px;
+  --fs-editor-max: 24px;
+  --fs-content: 15px;
+  --lh-ui: 1.4;
+  --lh-content: 1.6;
+
+  /* Escala de encabezados en vista Formato, relativa a --fs-content */
+  --content-h1-scale: 1.8;
+  --content-h2-scale: 1.5;
+  --content-h3-scale: 1.25;
+  --content-h4-scale: 1.1;
+  --content-h5-scale: 1;
+  --content-h6-scale: 1;
+
+  /* §3 Radios, bordes, sombras */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --border-w: 1px;
+  --shadow-popover: 0 4px 12px rgb(0 0 0 / 18%);
+
+  /* §4.4 Derivado — depende de --c-accent (definido por la paleta activa) */
+  --c-accent-soft: color-mix(in srgb, var(--c-accent) 15%, transparent);
+
+  /* §5 Barras de desplazamiento */
+  --scrollbar-thickness: 8px;
+  --scrollbar-thickness-hover: 10px;
+  --scrollbar-radius: 4px;
+  --scrollbar-track: transparent;
+
+  /* §6 Tamaños de componentes */
+  --bar-h: 32px;
+  --dock-w: 40px;
+  --dock-h: 32px;
+  --tabbar-h: 28px;
+  --statusbar-h: 22px;
+  --btn-size: 26px;
+  --icon-size: 16px;
+  --prefs-max-w: 720px;
+  --tab-min-w: 20px;
+  --tab-default-w: 140px;
+  --tab-arrow-w: 22px;
+
+  /* TAB-011: zona de agarre del borde derecho (más ancha que --border-w
+     para que sea fácil de arrastrar sin invadir el área de clic del título). */
+  --tab-resize-handle-w: 6px;
+  --window-min-w: 640px;
+  --window-min-h: 400px;
+  --content-max-w: 0;
+
+  /* UI-LAYOUT-RULES §4.1: línea superior de la pestaña activa */
+  --tab-indicator-h: 2px;
+
+  /* §7 Movimiento */
+  --dur-fast: 120ms;
+  --dur-med: 200ms;
+  --ease: cubic-bezier(.2, .8, .2, 1);
+
+  /* §9 Estados de foco */
+  --focus-ring: 2px solid var(--c-accent);
+  --focus-ring-offset: 1px;
+
+  /* Apilamiento de popovers/menús/overlays anclados (ADR-012 COORD-003) */
+  --z-popover: 10;
+}
+
+/* §4 Color por tema (independiente de paleta): scrollbar sobre el track */
+:root[data-theme="light"] {
+  --c-scrollbar: rgb(0 0 0 / 28%);
+  --c-scrollbar-hover: rgb(0 0 0 / 45%);
+}
+
+:root[data-theme="dark"] {
+  --c-scrollbar: rgb(255 255 255 / 28%);
+  --c-scrollbar-hover: rgb(255 255 255 / 45%);
+}
+
+/* §7 Respeta prefers-reduced-motion: las duraciones colapsan a 0 */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-fast: 0ms;
+    --dur-med: 0ms;
+  }
+}

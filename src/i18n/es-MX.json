@@ -1,0 +1,126 @@
+{
+  "window": {
+    "titleWithFile": "{file} — MDviedit",
+    "titleEmpty": "MDviedit"
+  },
+  "tab": {
+    "untitled": "Sin título {n}",
+    "menuLabel": "Menú contextual de la pestaña",
+    "close": "Cerrar",
+    "closeOthers": "Cerrar otras",
+    "closeAll": "Cerrar todas",
+    "closeRight": "Cerrar a la derecha",
+    "copyPath": "Copiar ruta",
+    "showInFolderWin": "Mostrar en Explorador",
+    "showInFolderMac": "Mostrar en Finder",
+    "scrollLeft": "Desplazar pestañas a la izquierda",
+    "scrollRight": "Desplazar pestañas a la derecha",
+    "resizeHandle": "Redimensionar pestaña"
+  },
+  "dock": {
+    "label": "Panel de acciones",
+    "menuLabel": "Posición del dock",
+    "new": "Nuevo",
+    "open": "Abrir",
+    "save": "Guardar",
+    "saveAs": "Guardar como",
+    "close": "Cerrar",
+    "theme": "Tema",
+    "preferences": "Preferencias",
+    "dragHandle": "Arrastrar para reubicar el dock"
+  },
+  "topRow": {
+    "formatToggle": "Mostrar u ocultar la barra de formato",
+    "viewToggleFormatted": "Formato",
+    "viewToggleRaw": "Sin formato",
+    "viewToggleLabel": "Vista del documento"
+  },
+  "toolbar": {
+    "more": "Más opciones de formato",
+    "bold": "Negrita",
+    "italic": "Cursiva",
+    "strikethrough": "Tachado",
+    "inlineCode": "Código en línea",
+    "heading": "Encabezado",
+    "heading1": "Encabezado 1",
+    "heading2": "Encabezado 2",
+    "heading3": "Encabezado 3",
+    "headingClear": "Quitar encabezado",
+    "list": "Lista",
+    "listOrdered": "Lista numerada",
+    "task": "Tarea",
+    "quote": "Cita",
+    "link": "Enlace",
+    "image": "Imagen",
+    "codeBlock": "Bloque de código",
+    "table": "Tabla",
+    "hr": "Línea horizontal"
+  },
+  "emptyState": {
+    "text": "Crea o abre un archivo"
+  },
+  "formattedPlaceholder": {
+    "text": "La vista Formato todavía no está disponible en esta versión.",
+    "switchToRaw": "Cambiar a Sin formato"
+  },
+  "largeFile": {
+    "notice": "Archivo grande: la vista Formato puede tardar",
+    "openAnyway": "Abrir en Formato de todos modos"
+  },
+  "dialog": {
+    "save": "Guardar",
+    "dontSave": "No guardar",
+    "cancel": "Cancelar",
+    "reload": "Recargar",
+    "keep": "Mantener",
+    "closeDirtyTitle": "Cambios sin guardar",
+    "closeDirtyMessage": "\"{file}\" tiene cambios sin guardar. ¿Deseas guardarlos?",
+    "fileChangedMessage": "El archivo cambió en disco. ¿Recargar o mantener tu versión?",
+    "fileChangedDirtyMessage": "El archivo cambió en disco y la pestaña tiene cambios sin guardar. ¿Recargar o mantener tu versión?",
+    "ioErrorTitle": "Error de E/S",
+    "ioErrorRead": "No se pudo abrir \"{file}\". Es posible que se haya movido, eliminado o que no tengas permiso para acceder a él.",
+    "ioErrorWrite": "No se pudo guardar \"{file}\". Es posible que se haya movido o eliminado desde que lo abriste. Usa \"Guardar como\" para elegir una nueva ubicación.",
+    "dockPromptMessage": "¿Mantener MDviedit en el Dock?",
+    "dockPromptDontAskAgain": "No volver a preguntar",
+    "installPathCommandFailed": "No se pudo instalar el comando automáticamente. Copia y ejecuta:"
+  },
+  "statusBar": {
+    "dirty": "● Sin guardar",
+    "saved": "Guardado"
+  },
+  "preferences": {
+    "tabTitle": "Preferencias",
+    "sectionAppearance": "Apariencia",
+    "sectionLayout": "Diseño",
+    "sectionEditor": "Editor",
+    "sectionFiles": "Archivos",
+    "sectionSystem": "Sistema",
+    "sectionGeneral": "General",
+    "themeModeSystem": "Sistema",
+    "themeModeLight": "Claro",
+    "themeModeDark": "Oscuro",
+    "themeMode": "Modo",
+    "paletteLabel": "Paleta",
+    "paletteA": "Grises + azul",
+    "paletteB": "Cálida + terracota",
+    "paletteC": "Fría + teal",
+    "editorFontSize": "Tamaño de fuente del editor",
+    "editorFontSizeDecrease": "Reducir tamaño de fuente",
+    "editorFontSizeIncrease": "Aumentar tamaño de fuente",
+    "dockPosition": "Posición del dock",
+    "dockPositionRight": "Derecha",
+    "dockPositionLeft": "Izquierda",
+    "dockPositionTop": "Arriba",
+    "dockPositionBottom": "Abajo",
+    "formatToolbarVisible": "Mostrar barra de formato al iniciar",
+    "lineNumbers": "Números de línea en Sin formato",
+    "defaultViewMode": "Vista por defecto al abrir archivos",
+    "watchFiles": "Avisar cuando un archivo cambie en disco",
+    "installPathCommand": "Instalar comando \"mdviedit\" en PATH",
+    "showDockPromptAgain": "Volver a mostrar aviso de Dock",
+    "locale": "Idioma",
+    "localeEsMx": "Español (México)",
+    "localeEn": "English",
+    "reset": "Restablecer valores predeterminados"
+  }
+}

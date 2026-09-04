@@ -1,0 +1,43 @@
+/*
+ * Paleta A — "Grises + azul" (VS Code / GitHub).
+ * Fuente: UI-DESIGN-SYSTEM.md §4.2. Activada con [data-palette="a"] en <html>.
+ * Tokens semánticos: los componentes solo usan estos, nunca colores directos.
+ */
+
+/* [data-palette-preview] es aditivo (IT-5, PreferencesView): mismo bloque de
+   tokens, alcance a un elemento cualquiera en vez de :root — para la tarjeta
+   de muestra de color del selector de paleta, sin duplicar valores hex en
+   ningún componente. */
+:root[data-palette="a"][data-theme="light"],
+[data-palette-preview="a"][data-theme="light"] {
+  --c-bg: #FFF;
+  --c-bg-elev: #F5F5F5;
+  --c-bg-hover: #E8E8E8;
+  --c-bg-active: #FFF;
+  --c-border: #DADADA;
+  --c-text: #1F1F1F;
+  --c-text-muted: #6B6B6B;
+  --c-accent: #2F6FED;
+  --c-accent-contrast: #FFF;
+  --c-dirty: #E0A100;
+  --c-danger: #D64545;
+  --c-code-bg: #F3F4F6;
+  --c-selection: rgb(47 111 237 / 25%);
+}
+
+:root[data-palette="a"][data-theme="dark"],
+[data-palette-preview="a"][data-theme="dark"] {
+  --c-bg: #1E1E1E;
+  --c-bg-elev: #252526;
+  --c-bg-hover: #2E2E30;
+  --c-bg-active: #1E1E1E;
+  --c-border: #3A3A3A;
+  --c-text: #D4D4D4;
+  --c-text-muted: #9A9A9A;
+  --c-accent: #5B9BFF;
+  --c-accent-contrast: #0B1020;
+  --c-dirty: #F2C14E;
+  --c-danger: #FF6B6B;
+  --c-code-bg: #2A2A2E;
+  --c-selection: rgb(91 155 255 / 30%);
+}
