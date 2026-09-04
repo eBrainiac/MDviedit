@@ -5,6 +5,9 @@ on:
     branches: [main]
   push:
     branches: [main]
+  # BL-073 / DIST-003: publish-public.yml reusa este build (installers +
+  # artifacts) para el release del repo público, sin duplicar los pasos.
+  workflow_call: {}
 
 jobs:
   build:
