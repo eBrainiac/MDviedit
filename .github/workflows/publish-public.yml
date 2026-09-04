@@ -1,0 +1,138 @@
+name: Publish to public repo
+
+# BL-073 / DIST-003/004 (ADR-009): en cada tag vX.Y.Z, compila los
+# instaladores (reusando ci.yml), sincroniza el árbol de archivos (sin
+# CLAUDE.md) al repo público vía PR + auto-merge, y publica el GitHub
+# Release con los instaladores adjuntos en el repo público.
+on:
+  push:
+    tags: ["v*"]
+
+env:
+  PUBLIC_REPO: eBrainiac/MDviedit
+
+jobs:
+  build:
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  sync-and-release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verifica que PUBLIC_REPO_TOKEN esté configurado
+        run: |
+          if [ -z "${{ secrets.PUBLIC_REPO_TOKEN }}" ]; then
+            echo "::error::Falta el secret PUBLIC_REPO_TOKEN (DIST-005) — ver docs/DISTRIBUTION.md §6, paso manual único."
+            exit 1
+          fi
+
+      - name: Genera el snapshot limpio (sin CLAUDE.md)
+        run: |
+          rm -rf /tmp/public-snapshot
+          mkdir -p /tmp/public-snapshot
+          git archive "${{ github.sha }}" | tar -x -C /tmp/public-snapshot
+          rm -f /tmp/public-snapshot/CLAUDE.md
+
+      - name: Clona el repo público y prepara la rama de sync
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          # El token va embebido en la URL del remoto en vez de depender del
+          # credential-helper de `gh auth setup-git` (más explícito y no
+          # depende de que cada subproceso de git herede GH_TOKEN).
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/${{ env.PUBLIC_REPO }}.git" /tmp/public-repo
+          cd /tmp/public-repo
+          git config user.email "eBrainiac@users.noreply.github.com"
+          git config user.name "eBrainiac"
+          git switch -c "sync/${{ github.ref_name }}"
+          # Reemplaza el árbol de trabajo por el snapshot, preservando .git.
+          find . -mindepth 1 -maxdepth 1 ! -name ".git" -exec rm -rf {} +
+          cp -a /tmp/public-snapshot/. .
+
+      - name: Commit + push de la rama de sync (si hay cambios)
+        id: sync
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          cd /tmp/public-repo
+          git add -A
+          if git diff --cached --quiet; then
+            echo "sin cambios que sincronizar respecto al main público actual"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git commit -m "chore: sync ${{ github.ref_name }} desde MDviedit-dev @ ${{ github.sha }}"
+          # --force: la rama sync/<tag> es propia y desechable (nunca se lee
+          # como historia real), así que un reintento del mismo tag no debe
+          # fallar por non-fast-forward.
+          git push --force origin "sync/${{ github.ref_name }}"
+          echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Abre el PR (o reusa uno existente) y activa auto-merge
+        if: steps.sync.outputs.changed == 'true'
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          cd /tmp/public-repo
+          pr_number=$(gh pr list --repo "${{ env.PUBLIC_REPO }}" --head "sync/${{ github.ref_name }}" --state open --json number --jq '.[0].number')
+          if [ -z "$pr_number" ]; then
+            gh pr create --repo "${{ env.PUBLIC_REPO }}" --base main --head "sync/${{ github.ref_name }}" \
+              --title "Sync ${{ github.ref_name }}" \
+              --body "Sincronización automática desde MDviedit-dev @ ${{ github.sha }} (BL-073, ADR-009)."
+            pr_number=$(gh pr view --repo "${{ env.PUBLIC_REPO }}" "sync/${{ github.ref_name }}" --json number --jq .number)
+          fi
+          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
+          gh pr merge --repo "${{ env.PUBLIC_REPO }}" "$pr_number" --auto --merge
+
+      - name: Espera a que el PR quede mergeado (CI en verde en el público)
+        if: steps.sync.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          pr_number="${{ steps.pr.outputs.number }}"
+          for i in $(seq 1 60); do
+            state=$(gh pr view --repo "${{ env.PUBLIC_REPO }}" "$pr_number" --json state --jq .state)
+            if [ "$state" = "MERGED" ]; then
+              echo "PR #$pr_number mergeado"
+              exit 0
+            fi
+            if [ "$state" = "CLOSED" ]; then
+              echo "::error::PR #$pr_number se cerró sin mergear"
+              exit 1
+            fi
+            sleep 30
+          done
+          echo "::error::Tiempo de espera agotado esperando el merge del PR #$pr_number"
+          exit 1
+
+      - name: Descarga los instaladores compilados
+        uses: actions/download-artifact@v4
+        with:
+          pattern: mdviedit-*
+          path: /tmp/artifacts
+
+      - name: Publica el GitHub Release en el repo público con los instaladores
+        env:
+          GH_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+        run: |
+          installer_exe=$(find /tmp/artifacts -iname "*.exe" | head -n1)
+          installer_dmg=$(find /tmp/artifacts -iname "*.dmg" | head -n1)
+          if [ -z "$installer_exe" ] || [ -z "$installer_dmg" ]; then
+            echo "::error::No se encontraron ambos instaladores (.exe y .dmg) entre los artifacts descargados."
+            exit 1
+          fi
+          # Reintento del mismo tag (p. ej. una prueba repetida): el release
+          # anterior se reemplaza en vez de fallar por "already exists".
+          if gh release view "${{ github.ref_name }}" --repo "${{ env.PUBLIC_REPO }}" >/dev/null 2>&1; then
+            gh release delete "${{ github.ref_name }}" --repo "${{ env.PUBLIC_REPO }}" --yes --cleanup-tag
+          fi
+          gh release create "${{ github.ref_name }}" --repo "${{ env.PUBLIC_REPO }}" \
+            "$installer_exe" "$installer_dmg" \
+            --title "${{ github.ref_name }}" \
+            --notes "Instaladores de MDviedit ${{ github.ref_name }} (Windows/macOS)."
