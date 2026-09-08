@@ -33,7 +33,28 @@
     "formatToggle": "Mostrar u ocultar la barra de formato",
     "viewToggleFormatted": "Formato",
     "viewToggleRaw": "Sin formato",
-    "viewToggleLabel": "Vista del documento"
+    "viewToggleLabel": "Vista del documento",
+    "aiChatToggle": "Chat de IA"
+  },
+  "aiChat": {
+    "panelLabel": "Chat de IA",
+    "backendLabel": "Backend del Chat",
+    "backendByok": "Tu clave (BYOK)",
+    "backendLocal": "Modelo local",
+    "contextLabel": "Contexto",
+    "contextEmpty": "Ningún archivo abierto para usar como contexto.",
+    "inputPlaceholder": "Escribe un mensaje…",
+    "send": "Enviar",
+    "summarize": "Resumir contexto seleccionado",
+    "emptyHistory": "Pregunta algo sobre los archivos abiertos.",
+    "downloadingModel": "Descargando modelo local…",
+    "cancelDownload": "Cancelar",
+    "applyChange": "Aplicar",
+    "discardChange": "Descartar",
+    "proposedChangeTitle": "Cambio propuesto",
+    "needsConfiguration": "Configura un proveedor BYOK o activa el modelo local en Preferencias → IA.",
+    "sending": "Enviando…",
+    "useLocalModelSwitch": "Usar modelo local (descarga ~2.74 GB la primera vez)"
   },
   "toolbar": {
     "more": "Más opciones de formato",
@@ -59,6 +80,11 @@
   "emptyState": {
     "text": "Crea o abre un archivo"
   },
+  "recentFiles": {
+    "openToggle": "Recientes",
+    "remove": "Quitar de la lista",
+    "clear": "Limpiar recientes"
+  },
   "formattedPlaceholder": {
     "text": "La vista Formato todavía no está disponible en esta versión.",
     "switchToRaw": "Cambiar a Sin formato"
@@ -82,7 +108,11 @@
     "ioErrorWrite": "No se pudo guardar \"{file}\". Es posible que se haya movido o eliminado desde que lo abriste. Usa \"Guardar como\" para elegir una nueva ubicación.",
     "dockPromptMessage": "¿Mantener MDviedit en el Dock?",
     "dockPromptDontAskAgain": "No volver a preguntar",
-    "installPathCommandFailed": "No se pudo instalar el comando automáticamente. Copia y ejecuta:"
+    "installPathCommandFailed": "No se pudo instalar el comando automáticamente. Copia y ejecuta:",
+    "removeFromRecent": "Quitar de la lista",
+    "aiModelDownloadFailedTitle": "Descarga de modelo fallida",
+    "aiModelDownloadFailedMessage": "No se pudo descargar el modelo local: {error}",
+    "retry": "Reintentar"
   },
   "statusBar": {
     "dirty": "● Sin guardar",
@@ -116,11 +146,41 @@
     "lineNumbers": "Números de línea en Sin formato",
     "defaultViewMode": "Vista por defecto al abrir archivos",
     "watchFiles": "Avisar cuando un archivo cambie en disco",
+    "recentFilesLimit": "Cantidad de archivos en Recientes",
+    "recentFilesLimitDecrease": "Reducir cantidad de archivos en Recientes",
+    "recentFilesLimitIncrease": "Aumentar cantidad de archivos en Recientes",
     "installPathCommand": "Instalar comando \"mdviedit\" en PATH",
     "showDockPromptAgain": "Volver a mostrar aviso de Dock",
     "locale": "Idioma",
     "localeEsMx": "Español (México)",
     "localeEn": "English",
-    "reset": "Restablecer valores predeterminados"
+    "reset": "Restablecer valores predeterminados",
+    "sectionAi": "IA",
+    "aiChatEnabled": "Activar Chat de IA",
+    "aiProvider": "Proveedor BYOK",
+    "aiProviderNone": "Ninguno",
+    "aiProviderOpenAi": "OpenAI",
+    "aiProviderAnthropic": "Anthropic",
+    "aiProviderOpenRouter": "OpenRouter",
+    "aiProviderNous": "Nous Portal",
+    "aiProviderTogether": "Together",
+    "aiProviderGroq": "Groq",
+    "aiProviderCustom": "Compatible personalizado",
+    "aiBaseUrl": "URL base",
+    "aiBaseUrlPlaceholder": "https://…",
+    "aiBaseUrlInvalid": "La URL base debe empezar con https://",
+    "aiModelId": "Modelo",
+    "aiModelIdPlaceholder": "p. ej. gpt-4o-mini",
+    "aiApiKey": "Clave de API",
+    "aiApiKeyPlaceholder": "sk-…",
+    "aiApiKeySave": "Guardar",
+    "aiApiKeyClear": "Quitar",
+    "aiApiKeySaved": "Guardada en el almacén seguro del sistema",
+    "aiApiKeyCleared": "Clave eliminada del almacén seguro",
+    "aiApiKeySaveFailed": "No se pudo guardar la clave en el almacén seguro del sistema",
+    "aiByokContextTokens": "Contexto del proveedor BYOK (tokens)",
+    "aiByokContextTokensDecrease": "Reducir contexto del proveedor BYOK",
+    "aiByokContextTokensIncrease": "Aumentar contexto del proveedor BYOK",
+    "aiUseLocalModel": "Usar modelo local cuando no hay BYOK configurado"
   }
 }

@@ -1,11 +1,14 @@
 <script lang="ts">
   import { tabsStore } from "../stores/tabs.svelte";
   import { breakpointStore } from "../stores/breakpoint.svelte";
+  import { preferences } from "../stores/preferences.svelte";
+  import { fileTypeForPath } from "../../config/app.config";
   import EmptyState from "./EmptyState.svelte";
   import PreferencesView from "./PreferencesView.svelte";
   import RawEditorView from "./RawEditorView.svelte";
   import WysiwygEditorView from "./WysiwygEditorView.svelte";
   import LargeFileNotice from "./LargeFileNotice.svelte";
+  import AIChatPanel from "./AIChatPanel.svelte";
 
   const activeTab = $derived(tabsStore.active);
 
@@ -30,19 +33,24 @@
   {:else if activeTab?.kind === "preferences"}
     <PreferencesView />
   {:else if activeTab}
-    <div class="content-column">
-      {#if activeTab.large}
-        <LargeFileNotice tabId={activeTab.id} />
-      {/if}
-      <div class="content-editor">
-        {#key activeTab.id + activeTab.viewMode + activeTab.reloadNonce}
-          {#if activeTab.viewMode === "formatted"}
-            <WysiwygEditorView tab={activeTab} />
-          {:else}
-            <RawEditorView tab={activeTab} />
-          {/if}
-        {/key}
+    <div class="content-row">
+      <div class="content-column">
+        {#if activeTab.large}
+          <LargeFileNotice tabId={activeTab.id} />
+        {/if}
+        <div class="content-editor">
+          {#key activeTab.id + activeTab.viewMode + activeTab.reloadNonce}
+            {#if activeTab.viewMode === "formatted" && fileTypeForPath(activeTab.path).editMode === "markdown"}
+              <WysiwygEditorView tab={activeTab} />
+            {:else}
+              <RawEditorView tab={activeTab} />
+            {/if}
+          {/key}
+        </div>
       </div>
+      {#if preferences.aiChatEnabled}
+        <AIChatPanel />
+      {/if}
     </div>
   {/if}
 </div>
@@ -54,9 +62,16 @@
     background: var(--c-bg);
   }
 
+  .content-row {
+    display: flex;
+    height: 100%;
+  }
+
   .content-column {
     display: flex;
     height: 100%;
+    flex: 1;
+    min-width: 0;
     flex-direction: column;
   }
 

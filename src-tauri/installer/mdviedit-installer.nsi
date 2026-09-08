@@ -565,6 +565,21 @@ LangString MDV_FILE_DESC_MD ${LANG_ENGLISH} "Markdown Document"
 LangString MDV_FILE_DESC_MD ${LANG_SPANISHINTERNATIONAL} "Documento Markdown"
 LangString MDV_FILE_DESC_TXT ${LANG_ENGLISH} "Text Document"
 LangString MDV_FILE_DESC_TXT ${LANG_SPANISHINTERNATIONAL} "Documento de texto"
+; SPEC-CORE-023/ADR-013/PD-89/90 (BL-128): seis tipos de código, mismo trato que MD/TXT.
+LangString MDV_FILE_DESC_PY ${LANG_ENGLISH} "Python File"
+LangString MDV_FILE_DESC_PY ${LANG_SPANISHINTERNATIONAL} "Archivo Python"
+LangString MDV_FILE_DESC_JSON ${LANG_ENGLISH} "JSON File"
+LangString MDV_FILE_DESC_JSON ${LANG_SPANISHINTERNATIONAL} "Archivo JSON"
+LangString MDV_FILE_DESC_JS ${LANG_ENGLISH} "JavaScript File"
+LangString MDV_FILE_DESC_JS ${LANG_SPANISHINTERNATIONAL} "Archivo JavaScript"
+LangString MDV_FILE_DESC_TS ${LANG_ENGLISH} "TypeScript File"
+LangString MDV_FILE_DESC_TS ${LANG_SPANISHINTERNATIONAL} "Archivo TypeScript"
+LangString MDV_FILE_DESC_YAML ${LANG_ENGLISH} "YAML File"
+LangString MDV_FILE_DESC_YAML ${LANG_SPANISHINTERNATIONAL} "Archivo YAML"
+LangString MDV_FILE_DESC_CSS ${LANG_ENGLISH} "CSS File"
+LangString MDV_FILE_DESC_CSS ${LANG_SPANISHINTERNATIONAL} "Hoja de estilos CSS"
+LangString MDV_FILE_DESC_HTML ${LANG_ENGLISH} "HTML Document"
+LangString MDV_FILE_DESC_HTML ${LANG_SPANISHINTERNATIONAL} "Documento HTML"
 
 Function .onInit
   ; MDV: defaults PD-24, antes de cualquier página (incluida la pasiva).

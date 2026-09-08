@@ -27,20 +27,37 @@
 
 !macro NSIS_HOOK_POSTINSTALL
   ; WIN-T4 (default ☑, PD-24): registra MDviedit como editor de
-  ; .md/.markdown/.txt sin forzarlo como predeterminado (rank Alternate ya
-  ; lo maneja Explorer al mostrarlo en "Abrir con").
+  ; .md/.markdown/.txt/.py/.json/.js/.ts/.yaml/.yml/.css/.html (INST-010,
+  ; PD-89/90) sin forzarlo como predeterminado (rank Alternate ya lo maneja
+  ; Explorer al mostrarlo en "Abrir con").
   ${If} $StateFileAssoc = 1
     !insertmacro APP_ASSOCIATE "md" "MDviedit.md" "$(MDV_FILE_DESC_MD)" "$INSTDIR\${MAINBINARYNAME}.exe,0" "$(MDV_OPEN_WITH)" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
     !insertmacro APP_ASSOCIATE "markdown" "MDviedit.markdown" "$(MDV_FILE_DESC_MD)" "$INSTDIR\${MAINBINARYNAME}.exe,0" "$(MDV_OPEN_WITH)" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
     !insertmacro APP_ASSOCIATE "txt" "MDviedit.txt" "$(MDV_FILE_DESC_TXT)" "$INSTDIR\${MAINBINARYNAME}.exe,0" "$(MDV_OPEN_WITH)" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
+    !insertmacro APP_ASSOCIATE "py" "MDviedit.py" "$(MDV_FILE_DESC_PY)" "$INSTDIR\${MAINBINARYNAME}.exe,0" "$(MDV_OPEN_WITH)" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
+    !insertmacro APP_ASSOCIATE "json" "MDviedit.json" "$(MDV_FILE_DESC_JSON)" "$INSTDIR\${MAINBINARYNAME}.exe,0" "$(MDV_OPEN_WITH)" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
+    !insertmacro APP_ASSOCIATE "js" "MDviedit.js" "$(MDV_FILE_DESC_JS)" "$INSTDIR\${MAINBINARYNAME}.exe,0" "$(MDV_OPEN_WITH)" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
+    !insertmacro APP_ASSOCIATE "ts" "MDviedit.ts" "$(MDV_FILE_DESC_TS)" "$INSTDIR\${MAINBINARYNAME}.exe,0" "$(MDV_OPEN_WITH)" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
+    !insertmacro APP_ASSOCIATE "yaml" "MDviedit.yaml" "$(MDV_FILE_DESC_YAML)" "$INSTDIR\${MAINBINARYNAME}.exe,0" "$(MDV_OPEN_WITH)" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
+    !insertmacro APP_ASSOCIATE "yml" "MDviedit.yml" "$(MDV_FILE_DESC_YAML)" "$INSTDIR\${MAINBINARYNAME}.exe,0" "$(MDV_OPEN_WITH)" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
+    !insertmacro APP_ASSOCIATE "css" "MDviedit.css" "$(MDV_FILE_DESC_CSS)" "$INSTDIR\${MAINBINARYNAME}.exe,0" "$(MDV_OPEN_WITH)" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
+    !insertmacro APP_ASSOCIATE "html" "MDviedit.html" "$(MDV_FILE_DESC_HTML)" "$INSTDIR\${MAINBINARYNAME}.exe,0" "$(MDV_OPEN_WITH)" "$\"$INSTDIR\${MAINBINARYNAME}.exe$\" $\"%1$\""
     !insertmacro UPDATEFILEASSOC
   ${EndIf}
 
-  ; WIN-T2 (default ☐): "Abrir con MDviedit" en archivos .md/.markdown/.txt.
+  ; WIN-T2 (default ☐): "Abrir con MDviedit" en los archivos de INST-010.
   ${If} $StateFileContext = 1
     !insertmacro MdvWriteFileContextEntry "md"
     !insertmacro MdvWriteFileContextEntry "markdown"
     !insertmacro MdvWriteFileContextEntry "txt"
+    !insertmacro MdvWriteFileContextEntry "py"
+    !insertmacro MdvWriteFileContextEntry "json"
+    !insertmacro MdvWriteFileContextEntry "js"
+    !insertmacro MdvWriteFileContextEntry "ts"
+    !insertmacro MdvWriteFileContextEntry "yaml"
+    !insertmacro MdvWriteFileContextEntry "yml"
+    !insertmacro MdvWriteFileContextEntry "css"
+    !insertmacro MdvWriteFileContextEntry "html"
   ${EndIf}
 
   ; WIN-T3 (default ☐): "Abrir con MDviedit" en carpetas (clic derecho sobre
@@ -74,6 +91,14 @@
     !insertmacro APP_UNASSOCIATE "md" "MDviedit.md"
     !insertmacro APP_UNASSOCIATE "markdown" "MDviedit.markdown"
     !insertmacro APP_UNASSOCIATE "txt" "MDviedit.txt"
+    !insertmacro APP_UNASSOCIATE "py" "MDviedit.py"
+    !insertmacro APP_UNASSOCIATE "json" "MDviedit.json"
+    !insertmacro APP_UNASSOCIATE "js" "MDviedit.js"
+    !insertmacro APP_UNASSOCIATE "ts" "MDviedit.ts"
+    !insertmacro APP_UNASSOCIATE "yaml" "MDviedit.yaml"
+    !insertmacro APP_UNASSOCIATE "yml" "MDviedit.yml"
+    !insertmacro APP_UNASSOCIATE "css" "MDviedit.css"
+    !insertmacro APP_UNASSOCIATE "html" "MDviedit.html"
     !insertmacro UPDATEFILEASSOC
   ${EndIf}
 
@@ -82,6 +107,14 @@
     !insertmacro MdvDeleteFileContextEntry "md"
     !insertmacro MdvDeleteFileContextEntry "markdown"
     !insertmacro MdvDeleteFileContextEntry "txt"
+    !insertmacro MdvDeleteFileContextEntry "py"
+    !insertmacro MdvDeleteFileContextEntry "json"
+    !insertmacro MdvDeleteFileContextEntry "js"
+    !insertmacro MdvDeleteFileContextEntry "ts"
+    !insertmacro MdvDeleteFileContextEntry "yaml"
+    !insertmacro MdvDeleteFileContextEntry "yml"
+    !insertmacro MdvDeleteFileContextEntry "css"
+    !insertmacro MdvDeleteFileContextEntry "html"
   ${EndIf}
 
   ReadRegDWORD $R5 SHCTX "${MANUPRODUCTKEY}" "TaskFolderContext"

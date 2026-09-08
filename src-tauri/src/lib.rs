@@ -1,3 +1,7 @@
+pub mod ai_byok;
+pub mod ai_download;
+mod ai_keychain;
+pub mod ai_local;
 mod cli;
 mod files;
 mod macos;
@@ -56,6 +60,43 @@ pub fn run() {
         // choca con ese (panic en debug: "Argument names must be unique").
         // Se lee igual desde `matches.args["version"]`, ver handle_version_flag.
         .plugin(tauri_plugin_cli::init())
+        // BL-116 / SPEC-CORE-022 / RULE-005: decisión de arquitectura de
+        // red — la CSP del webview (`tauri.conf.json -> app.security.csp`)
+        // se queda en `connect-src 'none'`, sin abrirse a ningún host. TODA
+        // petición de red del Chat de IA (BYOK y descarga del modelo local)
+        // vive del lado de Rust vía `reqwest` (ai_byok.rs/ai_download.rs),
+        // nunca `fetch`/XHR desde el frontend. Es una forma más estricta de
+        // cumplir "único punto de la app con acceso a red" que abrir CSP:
+        // el webview sigue sin poder hablar con nada por su cuenta aunque
+        // el Chat esté activo, y el acceso real queda acotado a dos
+        // comandos Tauri explícitos.
+        .manage(ai_download::AiDownloadState::default())
+        .manage(ai_local::AiLocalState::default())
+        // BUG-13 / SPEC-CORE-024 / SEC-012: se maneja del lado de Rust, no
+        // con `getCurrentWindow().onDragDropEvent()` del frontend — ese
+        // listener JS se registra de forma asíncrona tras la hidratación de
+        // Svelte, mientras que la ventana ya acepta drops nativos de OS
+        // desde el momento en que se crea (antes de que exista ningún
+        // frontend). Un drop que llegue en esa ventana se perdía en
+        // silencio (sin buffer/reintento del lado del puente de eventos de
+        // Tauri) — coincide con "ni abre el archivo ni muestra ningún
+        // error". `on_window_event` corre en Rust desde el arranque, sin
+        // depender de que el JS ya haya terminado de montar. Reenvía al
+        // mismo evento "cli-open" que ya escuchan `+layout.svelte` (mac
+        // `RunEvent::Opened` arriba) y `tauri-plugin-single-instance`, así
+        // que reutiliza la misma resolución/validación (`resolve_cli_paths`,
+        // SEC-011) sin duplicar lógica de apertura.
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::DragDrop(tauri::DragDropEvent::Drop { paths, .. }) = event {
+                // SPEC-CORE-024 / PD-92 / IN-041: un solo archivo por evento;
+                // más de uno queda fuera de alcance, sin comportamiento
+                // definido — se ignora en vez de abrir todos como el CLI.
+                if paths.len() == 1 {
+                    let paths: Vec<String> = paths.iter().map(|p| p.to_string_lossy().into_owned()).collect();
+                    let _ = window.emit("cli-open", cli::CliOpenArgs { new: false, paths });
+                }
+            }
+        })
         .invoke_handler(tauri::generate_handler![
             files::read_text_file,
             files::write_text_file_atomic,
@@ -65,6 +106,16 @@ pub fn run() {
             files::resolve_local_image,
             files::resolve_cli_paths,
             macos::install_path_command,
+            ai_keychain::ai_keychain_set_api_key,
+            ai_keychain::ai_keychain_get_api_key,
+            ai_keychain::ai_keychain_delete_api_key,
+            ai_byok::ai_byok_send_message,
+            ai_download::ai_model_download_start,
+            ai_download::ai_model_download_cancel,
+            ai_local::ai_local_model_status,
+            ai_local::ai_local_model_load,
+            ai_local::ai_local_model_unload,
+            ai_local::ai_local_generate,
         ])
         .setup(|app| {
             if handle_version_flag(app) {

@@ -3,8 +3,8 @@
  * src/config/app.config.ts (fuente única, CFG-003, ADR-006). Se ejecuta antes
  * de `dev` y `build` (ver package.json → predev/prebuild).
  *
- * No se edita tauri.conf.json a mano para: identifier, productName, tamaño
- * mínimo de ventana, fileAssociations.
+ * No se edita tauri.conf.json a mano para: identifier, productName,
+ * mainBinaryName, tamaño mínimo de ventana, fileAssociations.
  */
 import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -18,6 +18,7 @@ const conf = JSON.parse(readFileSync(tauriConfPath, "utf-8"));
 
 conf.productName = appConfig.name;
 conf.identifier = appConfig.id;
+conf.mainBinaryName = appConfig.mainBinaryName;
 
 conf.app ??= {};
 conf.app.windows ??= [{}];
@@ -33,7 +34,8 @@ conf.bundle.fileAssociations = [
   {
     ext,
     name: appConfig.fileFilters.name,
-    description: "Documento Markdown",
+    // SPEC-CORE-023/ADR-013: la lista ya no es solo Markdown (PD-89/90).
+    description: "Documento Markdown y código",
     role: "Editor",
     // MAC-T2/T3/T4 (DISTRIBUTION.md): MDviedit es un visor secundario, no
     // forzado como predeterminado.

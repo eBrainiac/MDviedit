@@ -28,6 +28,26 @@ export const markdownHighlightStyle = HighlightStyle.define([
   { tag: t.comment, color: "var(--c-text-muted)" },
 ]);
 
+/**
+ * BL-126/ADR-013: resaltado para pestañas `editMode: 'code'` — reutiliza
+ * únicamente tokens de color ya aprobados (RULE-002, sin colores nuevos);
+ * no hay una paleta de sintaxis dedicada en tokens.css/palettes/*.css.
+ */
+export const codeHighlightStyle = HighlightStyle.define([
+  {
+    tag: [t.keyword, t.controlKeyword, t.moduleKeyword, t.operatorKeyword, t.definitionKeyword],
+    color: "var(--c-accent)",
+    fontWeight: "700",
+  },
+  { tag: [t.typeName, t.className, t.namespace], color: "var(--c-accent)" },
+  { tag: [t.string, t.special(t.string)], color: "var(--c-dirty)" },
+  { tag: [t.number, t.bool, t.null, t.atom], color: "var(--c-dirty)" },
+  { tag: [t.propertyName, t.attributeName], color: "var(--c-text)" },
+  { tag: [t.comment, t.lineComment, t.blockComment], color: "var(--c-text-muted)", fontStyle: "italic" },
+  { tag: [t.operator, t.punctuation, t.bracket, t.separator], color: "var(--c-text-muted)" },
+  { tag: t.invalid, color: "var(--c-danger)" },
+]);
+
 export function createEditorTheme(): Extension {
   return EditorView.theme({
     "&": {

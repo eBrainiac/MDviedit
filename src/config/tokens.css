@@ -65,6 +65,11 @@
   --tab-default-w: 140px;
   --tab-arrow-w: 22px;
 
+  /* SPEC-CORE-022 / UI-SCREENS §10: ancho del panel lateral de Chat de IA.
+     Sin ancho exacto documentado en UI-SCREENS/UI-LAYOUT-RULES — elegido
+     por precedente con --prefs-max-w (a confirmar con Sebastian). */
+  --aichat-panel-w: 320px;
+
   /* TAB-011: zona de agarre del borde derecho (más ancha que --border-w
      para que sea fácil de arrastrar sin invadir el área de clic del título). */
   --tab-resize-handle-w: 6px;

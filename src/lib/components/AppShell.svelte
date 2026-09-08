@@ -4,8 +4,11 @@
   import { tabsStore } from "../stores/tabs.svelte";
   import { activeEditorStore } from "../stores/active-editor.svelte";
   import { syncFileWatchers } from "../stores/file-watch";
-  import { appConfig, type DockPosition } from "../../config/app.config";
-  import { matchesShortcut } from "../shortcut-match";
+  import { recentFilesStore } from "../stores/recent-files.svelte";
+  import { aiModelStore } from "../stores/ai-model.svelte";
+  import { aiChatStore } from "../stores/ai-chat.svelte";
+  import { appConfig, fileTypeForPath, type DockPosition } from "../../config/app.config";
+  import { matchesShortcut, isMacPlatform } from "../shortcut-match";
   import { formatCommands, headingLevels, headingClearCommand } from "../editor/format-commands";
   import { t } from "../../i18n";
   import Dock from "./Dock.svelte";
@@ -77,7 +80,9 @@
       preferences.toggleFormatToolbarVisible();
       return;
     }
-    if (activeTab?.kind === "file") {
+    // SPEC-CORE-003/005/023, PD-86: los atajos de FormatToolbar son de
+    // Markdown (IN-015 solo cubre "oculta por preferencia", no código).
+    if (activeTab?.kind === "file" && fileTypeForPath(activeTab.path).editMode === "markdown") {
       const formatCommand = allFormatCommands.find((cmd) => cmd.shortcut && matchesShortcut(event, cmd.shortcut));
       if (formatCommand) {
         event.preventDefault();
@@ -98,7 +103,10 @@
     } else if (matchesShortcut(event, shortcuts.saveAs)) {
       event.preventDefault();
       if (activeTab?.kind === "file") void tabsStore.saveAs(activeTab.id);
-    } else if (matchesShortcut(event, shortcuts.closeTab)) {
+    } else if (
+      matchesShortcut(event, shortcuts.closeTab) ||
+      (!isMacPlatform() && matchesShortcut(event, shortcuts.closeTabWin))
+    ) {
       event.preventDefault();
       if (activeTab) void tabsStore.close(activeTab.id);
     } else if (matchesShortcut(event, shortcuts.zoomIn)) {
@@ -148,6 +156,37 @@
     const openPaths = tabsStore.tabs.filter((tab) => tab.kind === "file" && tab.path !== null).map((tab) => tab.path as string);
     const enabled = preferences.watchFiles;
     void syncFileWatchers(openPaths, enabled);
+  });
+
+  // SPEC-CORE-021 / PD-53: `lastAccessedAt` se actualiza al abrir un archivo
+  // y al activar su pestaña. `lastTouchKey` (id+ruta) evita volver a tocar
+  // el historial en cada re-render disparado por ediciones de la pestaña
+  // activa (setContent llama a #touch() en cada tecla — ver el comentario
+  // de TabsStore#touch — que reasigna `tabs` y re-evalúa `tabsStore.active`
+  // sin que el archivo activo haya cambiado de verdad).
+  let lastTouchKey: string | null = null;
+  $effect(() => {
+    const activeTab = tabsStore.active;
+    if (!activeTab || activeTab.kind !== "file" || !activeTab.path) return;
+    const key = `${activeTab.id}:${activeTab.path}`;
+    if (key === lastTouchKey) return;
+    lastTouchKey = key;
+    recentFilesStore.touch(activeTab.path, activeTab.title);
+  });
+
+  // SPEC-CORE-022 / PD-65 / AT-108/109: activar el Chat con el modelo local
+  // preferido y sin BYOK configurado dispara la descarga/carga; desactivarlo
+  // siempre suelta la RAM (no solo oculta el panel), sin importar cómo se
+  // haya cargado el modelo.
+  $effect(() => {
+    if (preferences.aiChatEnabled) {
+      if (preferences.aiProvider === "none" && preferences.aiUseLocalModel) {
+        void aiModelStore.ensureLoaded();
+      }
+    } else {
+      void aiModelStore.unload();
+      aiChatStore.reset();
+    }
   });
 </script>
 

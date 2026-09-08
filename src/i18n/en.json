@@ -33,7 +33,28 @@
     "formatToggle": "Show or hide the format toolbar",
     "viewToggleFormatted": "Formatted",
     "viewToggleRaw": "Raw",
-    "viewToggleLabel": "Document view"
+    "viewToggleLabel": "Document view",
+    "aiChatToggle": "AI Chat"
+  },
+  "aiChat": {
+    "panelLabel": "AI Chat",
+    "backendLabel": "Chat backend",
+    "backendByok": "Your key (BYOK)",
+    "backendLocal": "Local model",
+    "contextLabel": "Context",
+    "contextEmpty": "No open files to use as context.",
+    "inputPlaceholder": "Type a message…",
+    "send": "Send",
+    "summarize": "Summarize selected context",
+    "emptyHistory": "Ask something about the open files.",
+    "downloadingModel": "Downloading local model…",
+    "cancelDownload": "Cancel",
+    "applyChange": "Apply",
+    "discardChange": "Discard",
+    "proposedChangeTitle": "Proposed change",
+    "needsConfiguration": "Set up a BYOK provider or enable the local model in Preferences → AI.",
+    "sending": "Sending…",
+    "useLocalModelSwitch": "Use local model (downloads ~2.74 GB the first time)"
   },
   "toolbar": {
     "more": "More formatting options",
@@ -59,6 +80,11 @@
   "emptyState": {
     "text": "Create or open a file"
   },
+  "recentFiles": {
+    "openToggle": "Recent",
+    "remove": "Remove from list",
+    "clear": "Clear recent files"
+  },
   "formattedPlaceholder": {
     "text": "The Formatted view isn't available in this build yet.",
     "switchToRaw": "Switch to Raw"
@@ -82,7 +108,11 @@
     "ioErrorWrite": "Couldn't save \"{file}\". It may have been moved or deleted since you opened it. Use \"Save as\" to pick a new location.",
     "dockPromptMessage": "Keep MDviedit in the Dock?",
     "dockPromptDontAskAgain": "Don't ask again",
-    "installPathCommandFailed": "Couldn't install the command automatically. Copy and run:"
+    "installPathCommandFailed": "Couldn't install the command automatically. Copy and run:",
+    "removeFromRecent": "Remove from list",
+    "aiModelDownloadFailedTitle": "Model download failed",
+    "aiModelDownloadFailedMessage": "Couldn't download the local model: {error}",
+    "retry": "Retry"
   },
   "statusBar": {
     "dirty": "● Unsaved",
@@ -116,11 +146,41 @@
     "lineNumbers": "Line numbers in Raw view",
     "defaultViewMode": "Default view when opening files",
     "watchFiles": "Warn when a file changes on disk",
+    "recentFilesLimit": "Number of files in Recent",
+    "recentFilesLimitDecrease": "Decrease number of files in Recent",
+    "recentFilesLimitIncrease": "Increase number of files in Recent",
     "installPathCommand": "Install \"mdviedit\" command in PATH",
     "showDockPromptAgain": "Show the Dock prompt again",
     "locale": "Language",
     "localeEsMx": "Español (México)",
     "localeEn": "English",
-    "reset": "Reset to defaults"
+    "reset": "Reset to defaults",
+    "sectionAi": "AI",
+    "aiChatEnabled": "Enable AI Chat",
+    "aiProvider": "BYOK provider",
+    "aiProviderNone": "None",
+    "aiProviderOpenAi": "OpenAI",
+    "aiProviderAnthropic": "Anthropic",
+    "aiProviderOpenRouter": "OpenRouter",
+    "aiProviderNous": "Nous Portal",
+    "aiProviderTogether": "Together",
+    "aiProviderGroq": "Groq",
+    "aiProviderCustom": "Custom compatible",
+    "aiBaseUrl": "Base URL",
+    "aiBaseUrlPlaceholder": "https://…",
+    "aiBaseUrlInvalid": "The base URL must start with https://",
+    "aiModelId": "Model",
+    "aiModelIdPlaceholder": "e.g. gpt-4o-mini",
+    "aiApiKey": "API key",
+    "aiApiKeyPlaceholder": "sk-…",
+    "aiApiKeySave": "Save",
+    "aiApiKeyClear": "Clear",
+    "aiApiKeySaved": "Saved to the system's secure store",
+    "aiApiKeyCleared": "Key removed from the secure store",
+    "aiApiKeySaveFailed": "Couldn't save the key to the system's secure store",
+    "aiByokContextTokens": "BYOK provider context (tokens)",
+    "aiByokContextTokensDecrease": "Decrease BYOK provider context",
+    "aiByokContextTokensIncrease": "Increase BYOK provider context",
+    "aiUseLocalModel": "Use the local model when no BYOK is configured"
   }
 }
