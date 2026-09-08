@@ -142,10 +142,20 @@
   }
 
   .wysiwyg-editor :global(.milkdown) {
+    /* BUG-04: sin esto, `.milkdown`/.ProseMirror solo ocupan la altura de su
+       contenido, dejando un área "muerta" debajo dentro de `.wysiwyg-editor`
+       (que sí llena el panel) donde el clic no llega al editor y se pierde
+       el foco. height explícito (no min-height) para que el min-height:100%
+       de `.ProseMirror` tenga un contenedor con altura resuelta contra la
+       cual calcularse (CSS ignora % de altura si el padre solo usa
+       min-height); `.ProseMirror` sigue creciendo con overflow:visible para
+       documentos más largos que el panel, sin recortarlos. */
+    height: 100%;
     outline: none;
   }
 
   .wysiwyg-editor :global(.ProseMirror) {
+    min-height: 100%;
     outline: none;
   }
 

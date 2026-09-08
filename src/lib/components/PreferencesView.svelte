@@ -4,8 +4,10 @@
   import { invoke } from "@tauri-apps/api/core";
   import { message } from "@tauri-apps/plugin-dialog";
   import { preferences } from "../stores/preferences.svelte";
+  import { getAiApiKey, setAiApiKey, deleteAiApiKey } from "../stores/ai-keychain";
   import {
     appConfig,
+    type AiProvider,
     type DockPosition,
     type PalKey,
     type ThemeMode,
@@ -46,8 +48,80 @@
     { value: "en", labelKey: "preferences.localeEn" },
   ];
 
+  // PD-83/BL-119: orden y opciones tal como los fija UI-SCREENS §8.
+  const aiProviders: readonly { value: AiProvider; labelKey: string }[] = [
+    { value: "none", labelKey: "preferences.aiProviderNone" },
+    { value: "openai", labelKey: "preferences.aiProviderOpenAi" },
+    { value: "anthropic", labelKey: "preferences.aiProviderAnthropic" },
+    { value: "openrouter", labelKey: "preferences.aiProviderOpenRouter" },
+    { value: "nous", labelKey: "preferences.aiProviderNous" },
+    { value: "together", labelKey: "preferences.aiProviderTogether" },
+    { value: "groq", labelKey: "preferences.aiProviderGroq" },
+    { value: "custom", labelKey: "preferences.aiProviderCustom" },
+  ];
+
+  // BL-109 / ADR-010: `aiApiKey` nunca vive en `preferences.svelte.ts`
+  // (tauri-plugin-store) — se lee/escribe aparte vía ai-keychain.ts (SO).
+  let apiKeyDraft = $state("");
+  let apiKeyHasSaved = $state(false);
+  let apiKeyStatus = $state<string | null>(null);
+
+  // AI-SEC-001/BL-120: `aiBaseUrl` se valida al perder el foco, no en cada
+  // tecla — un $derived escribible desacopla lo que se escribe de lo que ya
+  // está guardado/activo, y se resincroniza solo cuando un preset (PD-83)
+  // precarga la URL o se guarda con éxito.
+  let aiBaseUrlDraft = $derived(preferences.aiBaseUrl);
+  let aiBaseUrlError = $state(false);
+
+  function saveAiBaseUrl(): void {
+    aiBaseUrlError = !preferences.setAiBaseUrl(aiBaseUrlDraft.trim());
+  }
+
+  void (async () => {
+    try {
+      apiKeyHasSaved = (await getAiApiKey()) !== null;
+    } catch {
+      // Fuera de un contexto Tauri real (p. ej. verificación en Chrome
+      // durante desarrollo) el comando de keychain no resuelve — no debe
+      // interrumpir el resto de Preferencias, mismo criterio que el resto
+      // de llamadas a plugins fuera del webview real.
+    }
+  })();
+
+  async function saveApiKey(): Promise<void> {
+    if (!apiKeyDraft) return;
+    try {
+      await setAiApiKey(apiKeyDraft);
+      apiKeyDraft = "";
+      apiKeyHasSaved = true;
+      apiKeyStatus = t("preferences.aiApiKeySaved");
+    } catch {
+      apiKeyStatus = t("preferences.aiApiKeySaveFailed");
+    }
+  }
+
+  async function clearApiKey(): Promise<void> {
+    try {
+      await deleteAiApiKey();
+      apiKeyHasSaved = false;
+      apiKeyStatus = t("preferences.aiApiKeyCleared");
+    } catch {
+      apiKeyStatus = t("preferences.aiApiKeySaveFailed");
+    } finally {
+      apiKeyDraft = "";
+    }
+  }
+
   function zoomStep(delta: number): void {
     preferences.setEditorFontSize(preferences.editorFontSize + delta);
+  }
+
+  function contextTokensStep(delta: number): void {
+    preferences.setAiByokContextTokens(preferences.aiByokContextTokens + delta);
+  }
+
+  function recentFilesLimitStep(delta: number): void {
+    preferences.setRecentFilesLimit(preferences.recentFilesLimit + delta);
   }
 
   async function handleInstallPathCommand(): Promise<void> {
@@ -202,6 +276,146 @@
         onchange={(event) => preferences.setWatchFiles(event.currentTarget.checked)}
       />
     </label>
+
+    <div class="pref-row">
+      <span class="pref-label" id="pref-recents-limit-label">{t("preferences.recentFilesLimit")}</span>
+      <div class="stepper" role="group" aria-labelledby="pref-recents-limit-label">
+        <button
+          type="button"
+          class="stepper-btn"
+          disabled={preferences.recentFilesLimit <= appConfig.behavior.recentFilesLimitMin}
+          aria-label={t("preferences.recentFilesLimitDecrease")}
+          onclick={() => recentFilesLimitStep(-1)}
+        >
+          <Minus class="stepper-icon" aria-hidden="true" />
+        </button>
+        <output class="stepper-value">{preferences.recentFilesLimit}</output>
+        <button
+          type="button"
+          class="stepper-btn"
+          disabled={preferences.recentFilesLimit >= appConfig.behavior.recentFilesLimitMax}
+          aria-label={t("preferences.recentFilesLimitIncrease")}
+          onclick={() => recentFilesLimitStep(1)}
+        >
+          <Plus class="stepper-icon" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="pref-section">
+    <h2 class="pref-heading">{t("preferences.sectionAi")}</h2>
+
+    <label class="pref-row pref-row-switch">
+      <span class="pref-label">{t("preferences.aiChatEnabled")}</span>
+      <input
+        type="checkbox"
+        class="switch"
+        checked={preferences.aiChatEnabled}
+        onchange={(event) => preferences.setAiChatEnabled(event.currentTarget.checked)}
+      />
+    </label>
+
+    <div class="pref-row">
+      <label class="pref-label" for="pref-ai-provider" id="pref-ai-provider-label">{t("preferences.aiProvider")}</label>
+      <select
+        id="pref-ai-provider"
+        class="pref-select"
+        value={preferences.aiProvider}
+        onchange={(event) => preferences.setAiProvider(event.currentTarget.value as AiProvider)}
+      >
+        {#each aiProviders as option (option.value)}
+          <option value={option.value}>{t(option.labelKey)}</option>
+        {/each}
+      </select>
+    </div>
+
+    <div class="pref-row pref-row-apikey">
+      <label class="pref-label" for="pref-ai-base-url">{t("preferences.aiBaseUrl")}</label>
+      <div class="apikey-group">
+        <input
+          id="pref-ai-base-url"
+          type="text"
+          class="apikey-input"
+          placeholder={t("preferences.aiBaseUrlPlaceholder")}
+          bind:value={aiBaseUrlDraft}
+          onblur={saveAiBaseUrl}
+        />
+      </div>
+    </div>
+    {#if aiBaseUrlError}
+      <p class="apikey-status" role="alert">{t("preferences.aiBaseUrlInvalid")}</p>
+    {/if}
+
+    <div class="pref-row pref-row-apikey">
+      <label class="pref-label" for="pref-ai-model-id">{t("preferences.aiModelId")}</label>
+      <div class="apikey-group">
+        <input
+          id="pref-ai-model-id"
+          type="text"
+          class="apikey-input"
+          placeholder={t("preferences.aiModelIdPlaceholder")}
+          value={preferences.aiModelId}
+          oninput={(event) => preferences.setAiModelId(event.currentTarget.value)}
+        />
+      </div>
+    </div>
+
+    <div class="pref-row pref-row-apikey">
+      <label class="pref-label" for="pref-ai-api-key">{t("preferences.aiApiKey")}</label>
+      <div class="apikey-group">
+        <input
+          id="pref-ai-api-key"
+          type="password"
+          class="apikey-input"
+          placeholder={apiKeyHasSaved ? t("preferences.aiApiKeySaved") : t("preferences.aiApiKeyPlaceholder")}
+          bind:value={apiKeyDraft}
+        />
+        <button type="button" class="pref-action-btn" disabled={!apiKeyDraft} onclick={saveApiKey}>
+          {t("preferences.aiApiKeySave")}
+        </button>
+        <button type="button" class="pref-action-btn" disabled={!apiKeyHasSaved} onclick={clearApiKey}>
+          {t("preferences.aiApiKeyClear")}
+        </button>
+      </div>
+    </div>
+    {#if apiKeyStatus}
+      <p class="apikey-status" role="status">{apiKeyStatus}</p>
+    {/if}
+
+    <div class="pref-row">
+      <span class="pref-label" id="pref-ai-context-tokens-label">{t("preferences.aiByokContextTokens")}</span>
+      <div class="stepper" role="group" aria-labelledby="pref-ai-context-tokens-label">
+        <button
+          type="button"
+          class="stepper-btn"
+          disabled={preferences.aiByokContextTokens <= appConfig.behavior.aiByokContextTokensMin}
+          aria-label={t("preferences.aiByokContextTokensDecrease")}
+          onclick={() => contextTokensStep(-appConfig.behavior.aiByokContextTokensStep)}
+        >
+          <Minus class="stepper-icon" aria-hidden="true" />
+        </button>
+        <output class="stepper-value">{preferences.aiByokContextTokens}</output>
+        <button
+          type="button"
+          class="stepper-btn"
+          aria-label={t("preferences.aiByokContextTokensIncrease")}
+          onclick={() => contextTokensStep(appConfig.behavior.aiByokContextTokensStep)}
+        >
+          <Plus class="stepper-icon" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+
+    <label class="pref-row pref-row-switch">
+      <span class="pref-label">{t("preferences.aiUseLocalModel")}</span>
+      <input
+        type="checkbox"
+        class="switch"
+        checked={preferences.aiUseLocalModel}
+        onchange={(event) => preferences.setAiUseLocalModel(event.currentTarget.checked)}
+      />
+    </label>
   </section>
 
   {#if isMac}
@@ -326,6 +540,26 @@
     background: var(--c-bg-hover);
   }
 
+  /* PD-83/BL-119: 8 presets de proveedor BYOK no caben como `.segmented`
+     (pensado para 2-4 opciones) — un `<select>` nativo es el widget correcto
+     para un selector con muchas opciones; reusa los mismos tokens que
+     `.apikey-input`. */
+  .pref-select {
+    height: var(--btn-size);
+    padding: 0 var(--space-2);
+    border: var(--border-w) solid var(--c-border);
+    border-radius: var(--radius-sm);
+    background: var(--c-bg);
+    color: var(--c-text);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .pref-select:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
   .palette-group {
     display: flex;
     flex-shrink: 0;
@@ -413,6 +647,39 @@
   :global(.stepper-icon) {
     width: var(--icon-size);
     height: var(--icon-size);
+  }
+
+  .pref-row-apikey {
+    align-items: flex-start;
+  }
+
+  .apikey-group {
+    display: flex;
+    flex-shrink: 0;
+    gap: var(--space-2);
+  }
+
+  .apikey-input {
+    width: calc(var(--btn-size) * 6);
+    height: var(--btn-size);
+    padding: 0 var(--space-2);
+    border: var(--border-w) solid var(--c-border);
+    border-radius: var(--radius-sm);
+    background: var(--c-bg);
+    color: var(--c-text);
+    font: inherit;
+  }
+
+  .apikey-input:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  .apikey-status {
+    margin: calc(var(--space-2) * -1) 0 var(--space-2);
+    color: var(--c-text-muted);
+    font-size: var(--fs-status);
+    text-align: right;
   }
 
   .switch {

@@ -6,9 +6,10 @@
 // sesión restaurada ya validada por `validate_existing_paths` (SEC-002).
 //
 // La lista de extensiones debe coincidir con `app.config.ts -> fileFilters`
-// (SPEC-CORE-001, PD-23); duplicarla aquí es inevitable cruzando el límite
-// Rust/TypeScript.
-const ALLOWED_EXTENSIONS: [&str; 3] = ["md", "markdown", "txt"];
+// (SPEC-CORE-001/023, PD-23, PD-89/90); duplicarla aquí es inevitable
+// cruzando el límite Rust/TypeScript.
+const ALLOWED_EXTENSIONS: [&str; 11] =
+    ["md", "markdown", "txt", "py", "json", "js", "ts", "yaml", "yml", "css", "html"];
 
 /// Debe coincidir con `app.config.ts -> behavior.maxFolderOpen` (PD-26).
 const MAX_FOLDER_OPEN: usize = 20;
@@ -27,6 +28,36 @@ pub fn read_text_file(path: String) -> Result<String, String> {
         return Err(format!("Extensión no permitida: {path}"));
     }
     std::fs::read_to_string(&path).map_err(|err| err.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn allows_markdown_and_plain_text_unchanged() {
+        assert!(has_allowed_extension("a.md"));
+        assert!(has_allowed_extension("a.markdown"));
+        assert!(has_allowed_extension("a.txt"));
+    }
+
+    #[test]
+    fn allows_the_six_code_types_of_pd_90() {
+        for ext in ["py", "json", "js", "ts", "yaml", "yml", "css", "html"] {
+            assert!(has_allowed_extension(&format!("a.{ext}")), "esperaba permitir .{ext}");
+        }
+    }
+
+    #[test]
+    fn extension_check_is_case_insensitive() {
+        assert!(has_allowed_extension("A.PY"));
+    }
+
+    #[test]
+    fn rejects_unregistered_extensions() {
+        assert!(!has_allowed_extension("a.exe"));
+        assert!(!has_allowed_extension("a"));
+    }
 }
 
 /// SEC-007: escribe a `{path}.tmp` y renombra sobre el original, para no

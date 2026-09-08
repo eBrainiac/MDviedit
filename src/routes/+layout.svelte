@@ -10,6 +10,7 @@
   import { message } from "@tauri-apps/plugin-dialog";
   import { preferences } from "../lib/stores/preferences.svelte";
   import { tabsStore } from "../lib/stores/tabs.svelte";
+  import { recentFilesStore } from "../lib/stores/recent-files.svelte";
   import { isMacPlatform } from "../lib/shortcut-match";
   import { t } from "../i18n";
   import type { Snippet } from "svelte";
@@ -23,6 +24,8 @@
   void preferencesReady;
   // SPEC-CORE-016 / BL-026: reabre las pestañas con ruta de la sesión anterior.
   void tabsStore.restoreSession();
+  // SPEC-CORE-021 / BL-108: hidrata el historial de Recientes desde disco.
+  void recentFilesStore.init();
 
   interface CliOpenArgs {
     new: boolean;
@@ -54,9 +57,15 @@
     }
   })();
 
-  // BL-052: reinvocación de single-instance o RunEvent::Opened (mac) —
-  // ambas reenvían al mismo evento "cli-open" desde el lado Rust (ver
-  // src-tauri/src/lib.rs).
+  // BL-052: reinvocación de single-instance, RunEvent::Opened (mac) y
+  // arrastrar-y-soltar un archivo (SPEC-CORE-024 / BL-133 / BUG-13) — las
+  // tres reenvían al mismo evento "cli-open" desde el lado Rust (ver
+  // src-tauri/src/lib.rs). El drop se maneja en `on_window_event` de Rust
+  // (no con `getCurrentWindow().onDragDropEvent()` del frontend) a propósito:
+  // ese listener JS solo queda registrado después de que Svelte termina de
+  // hidratar, mientras que la ventana ya acepta drops nativos de OS desde
+  // que se crea — un drop que llegara en esa ventana entre la creación de
+  // la ventana y el registro del listener se perdía en silencio (BUG-13).
   $effect(() => {
     let unlisten: (() => void) | undefined;
     void listen<CliOpenArgs>("cli-open", (event) => void handleCliOpen(event.payload)).then((fn) => {

@@ -9,11 +9,14 @@
   import Settings from "@lucide/svelte/icons/settings";
   import GripVertical from "@lucide/svelte/icons/grip-vertical";
   import GripHorizontal from "@lucide/svelte/icons/grip-horizontal";
+  import ChevronDown from "@lucide/svelte/icons/chevron-down";
   import { preferences } from "../stores/preferences.svelte";
   import { tabsStore } from "../stores/tabs.svelte";
+  import { recentFilesStore } from "../stores/recent-files.svelte";
   import { appConfig, type DockPosition } from "../../config/app.config";
   import { t } from "../../i18n";
   import { formatShortcut } from "../format-shortcut";
+  import RecentFilesList from "./RecentFilesList.svelte";
 
   let { onDragStart }: { onDragStart: (event: PointerEvent) => void } = $props();
 
@@ -34,6 +37,7 @@
   );
 
   let menuOpen = $state(false);
+  let recentsOpen = $state(false);
 
   function closeMenu(): void {
     menuOpen = false;
@@ -42,6 +46,15 @@
   function openMenu(event: MouseEvent): void {
     event.preventDefault();
     menuOpen = true;
+  }
+
+  function closeRecents(): void {
+    recentsOpen = false;
+  }
+
+  function toggleRecents(event: MouseEvent): void {
+    event.stopPropagation();
+    recentsOpen = !recentsOpen;
   }
 
   function choosePosition(position: DockPosition): void {
@@ -53,6 +66,15 @@
     if (!menuOpen) return;
     function onKeydown(event: KeyboardEvent): void {
       if (event.key === "Escape") closeMenu();
+    }
+    window.addEventListener("keydown", onKeydown);
+    return () => window.removeEventListener("keydown", onKeydown);
+  });
+
+  $effect(() => {
+    if (!recentsOpen) return;
+    function onKeydown(event: KeyboardEvent): void {
+      if (event.key === "Escape") closeRecents();
     }
     window.addEventListener("keydown", onKeydown);
     return () => window.removeEventListener("keydown", onKeydown);
@@ -82,15 +104,40 @@
   >
     <FilePlus class="dock-icon" aria-hidden="true" />
   </button>
-  <button
-    type="button"
-    class="dock-btn"
-    title={`${t("dock.open")} (${formatShortcut(appConfig.shortcuts.open)})`}
-    aria-label={t("dock.open")}
-    onclick={() => tabsStore.openDialog()}
-  >
-    <FolderOpen class="dock-icon" aria-hidden="true" />
-  </button>
+  <div class="dock-open-group">
+    <button
+      type="button"
+      class="dock-btn"
+      title={`${t("dock.open")} (${formatShortcut(appConfig.shortcuts.open)})`}
+      aria-label={t("dock.open")}
+      onclick={() => tabsStore.openDialog()}
+    >
+      <FolderOpen class="dock-icon" aria-hidden="true" />
+    </button>
+    {#if recentFilesStore.entries.length > 0}
+      <button
+        type="button"
+        class="dock-recents-toggle"
+        aria-label={t("recentFiles.openToggle")}
+        aria-expanded={recentsOpen}
+        onclick={toggleRecents}
+      >
+        <ChevronDown class="dock-recents-icon" aria-hidden="true" />
+      </button>
+    {/if}
+
+    {#if recentsOpen}
+      <button
+        type="button"
+        class="menu-backdrop"
+        aria-label={t("dialog.cancel")}
+        onclick={closeRecents}
+      ></button>
+      <div class="recents-flyout" role="menu" aria-label={t("recentFiles.openToggle")}>
+        <RecentFilesList onNavigate={closeRecents} />
+      </div>
+    {/if}
+  </div>
   <button
     type="button"
     class="dock-btn"
@@ -245,6 +292,77 @@
 
   .dock-btn:active:not(:disabled) {
     background: var(--c-accent-soft);
+  }
+
+  .dock-open-group {
+    position: relative;
+    display: flex;
+    flex-shrink: 0;
+  }
+
+  /* SPEC-CORE-021/UI-SCREENS §4: "chevron junto al botón" — insignia dentro
+     del mismo hueco de --btn-size (el dock tiene ancho fijo --dock-w, sin
+     espacio documentado para un segundo botón de tamaño completo). */
+  .dock-recents-toggle {
+    display: flex;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    border: none;
+    border-radius: var(--radius-sm);
+    background: var(--c-bg-elev);
+    color: var(--c-text-muted);
+    cursor: pointer;
+  }
+
+  .dock-recents-toggle:hover {
+    color: var(--c-text);
+  }
+
+  .dock-recents-toggle:focus-visible {
+    outline: var(--focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  :global(.dock-recents-icon) {
+    width: 100%;
+    height: 100%;
+  }
+
+  .recents-flyout {
+    position: absolute;
+    z-index: calc(var(--z-popover) + 1);
+    box-sizing: border-box;
+    max-width: var(--prefs-max-w);
+    padding: var(--space-2);
+    background: var(--c-bg-elev);
+    border: var(--border-w) solid var(--c-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-popover);
+  }
+
+  .dock[data-position="right"] .recents-flyout {
+    top: 0;
+    right: calc(100% + var(--space-1));
+  }
+
+  .dock[data-position="left"] .recents-flyout {
+    top: 0;
+    left: calc(100% + var(--space-1));
+  }
+
+  .dock[data-position="top"] .recents-flyout {
+    top: calc(100% + var(--space-1));
+    left: 0;
+  }
+
+  .dock[data-position="bottom"] .recents-flyout {
+    bottom: calc(100% + var(--space-1));
+    left: 0;
   }
 
   .dock-separator {

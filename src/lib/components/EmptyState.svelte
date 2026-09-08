@@ -4,6 +4,7 @@
   import { appConfig } from "../../config/app.config";
   import { tabsStore } from "../stores/tabs.svelte";
   import { t } from "../../i18n";
+  import RecentFilesList from "./RecentFilesList.svelte";
 </script>
 
 <!-- UI-SCREENS §1, estado `empty` -->
@@ -19,6 +20,9 @@
       <FolderOpen class="icon" aria-hidden="true" />
       {t("dock.open")}
     </button>
+  </div>
+  <div class="recents">
+    <RecentFilesList />
   </div>
 </div>
 
@@ -46,6 +50,11 @@
   .actions {
     display: flex;
     gap: var(--space-2);
+  }
+
+  .recents {
+    width: 100%;
+    max-width: var(--prefs-max-w);
   }
 
   .action {

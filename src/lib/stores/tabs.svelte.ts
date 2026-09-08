@@ -9,7 +9,7 @@
 import type { EditorState } from "@codemirror/state";
 import { open as openDialog, save as saveDialog, message } from "@tauri-apps/plugin-dialog";
 import { invoke } from "@tauri-apps/api/core";
-import { appConfig, type ViewMode } from "../../config/app.config";
+import { appConfig, fileTypeForPath, type ViewMode } from "../../config/app.config";
 import { t } from "../../i18n";
 import { loadSession, saveSession, type SessionTab } from "../session";
 import { preferences } from "./preferences.svelte";
@@ -138,7 +138,13 @@ export class TabsStore {
         // (LargeFileNotice), sin importar defaultViewMode o la sesión previa.
         const byteLength = new TextEncoder().encode(text).length;
         const isLarge = byteLength > appConfig.behavior.largeFileThresholdBytes;
-        const viewMode: ViewMode = isLarge ? "raw" : (viewModes?.get(path) ?? preferences.defaultViewMode);
+        // SPEC-CORE-023/PD-86: código no tiene vista Formato — siempre Sin
+        // formato, sin importar defaultViewMode o lo guardado en sesión. El
+        // aviso de LargeFileNotice ("la vista Formato puede tardar") no
+        // aplica: no hay vista Formato de la que advertir en código.
+        const isCode = fileTypeForPath(path).editMode === "code";
+        const viewMode: ViewMode =
+          isLarge || isCode ? "raw" : (viewModes?.get(path) ?? preferences.defaultViewMode);
 
         this.#insertAndActivate({
           id: this.#makeId(),
@@ -152,7 +158,7 @@ export class TabsStore {
           scroll: 0,
           width: null,
           focusOnMount: false,
-          large: isLarge,
+          large: isLarge && !isCode,
           reloadNonce: 0,
         });
       } catch {
@@ -201,17 +207,23 @@ export class TabsStore {
     this.#touch();
   }
 
+  /** SPEC-CORE-023/PD-86: sin efecto en pestañas de código (sin vista Formato). */
   setViewMode(id: string, viewMode: ViewMode): void {
     const tab = this.tabs.find((t) => t.id === id);
-    if (!tab) return;
+    if (!tab || fileTypeForPath(tab.path).editMode === "code") return;
     tab.viewMode = viewMode;
     this.#touch();
   }
 
-  /** LargeFileNotice → "Abrir en Formato de todos modos" (UI-SCREENS §3). */
+  /**
+   * LargeFileNotice → "Abrir en Formato de todos modos" (UI-SCREENS §3).
+   * No aplica a código (SPEC-CORE-023/PD-86: sin vista Formato) — `large`
+   * nunca es `true` para una pestaña de código (ver `openPaths`), pero se
+   * guarda igual por defensivo.
+   */
   openLargeFileAnyway(id: string): void {
     const tab = this.tabs.find((t) => t.id === id);
-    if (!tab) return;
+    if (!tab || fileTypeForPath(tab.path).editMode === "code") return;
     tab.large = false;
     tab.viewMode = "formatted";
     this.#touch();

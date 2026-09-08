@@ -11,6 +11,7 @@
 import { Store } from "@tauri-apps/plugin-store";
 import {
   appConfig,
+  type AiProvider,
   type DockPosition,
   type Locale,
   type PalKey,
@@ -25,6 +26,16 @@ const PALETTES: readonly PalKey[] = ["a", "b", "c"];
 const DOCK_POSITIONS: readonly DockPosition[] = ["left", "right", "top", "bottom"];
 const VIEW_MODES: readonly ViewMode[] = ["raw", "formatted"];
 const LOCALES: readonly Locale[] = ["es-MX", "en"];
+const AI_PROVIDERS: readonly AiProvider[] = [
+  "none",
+  "openai",
+  "anthropic",
+  "openrouter",
+  "nous",
+  "together",
+  "groq",
+  "custom",
+];
 
 function isOneOf<T>(values: readonly T[], value: unknown): value is T {
   return (values as readonly unknown[]).includes(value);
@@ -41,6 +52,16 @@ class PreferencesStore {
   watchFiles = $state<boolean>(defaults.watchFiles);
   dockPromptDismissed = $state<boolean>(defaults.dockPromptDismissed);
   locale = $state<Locale>(defaults.locale);
+  recentFilesLimit = $state<number>(defaults.recentFilesLimit);
+  // SPEC-CORE-022 / ADR-010 / PD-65: `aiApiKey` NO vive aquí (desviación
+  // explícita de ADR-006, ver ai-keychain.ts) — solo el resto de la config
+  // de IA, que no es sensible y sí sigue el patrón normal de preferencias.
+  aiChatEnabled = $state<boolean>(defaults.aiChatEnabled);
+  aiProvider = $state<AiProvider>(defaults.aiProvider);
+  aiBaseUrl = $state<string>(defaults.aiBaseUrl);
+  aiModelId = $state<string>(defaults.aiModelId);
+  aiByokContextTokens = $state<number>(defaults.aiByokContextTokens);
+  aiUseLocalModel = $state<boolean>(defaults.aiUseLocalModel);
 
   /** Modo resuelto (system -> light/dark real) aplicado a data-theme. */
   resolvedTheme = $state<"light" | "dark">("light");
@@ -78,6 +99,13 @@ class PreferencesStore {
     const watchFiles = await this.#store.get<boolean>("watchFiles");
     const dockPromptDismissed = await this.#store.get<boolean>("dockPromptDismissed");
     const locale = await this.#store.get<Locale>("locale");
+    const recentFilesLimit = await this.#store.get<number>("recentFilesLimit");
+    const aiChatEnabled = await this.#store.get<boolean>("aiChatEnabled");
+    const aiProvider = await this.#store.get<AiProvider>("aiProvider");
+    const aiBaseUrl = await this.#store.get<string>("aiBaseUrl");
+    const aiModelId = await this.#store.get<string>("aiModelId");
+    const aiByokContextTokens = await this.#store.get<number>("aiByokContextTokens");
+    const aiUseLocalModel = await this.#store.get<boolean>("aiUseLocalModel");
 
     this.themeMode = isOneOf(THEME_MODES, themeMode) ? themeMode : defaults.themeMode;
     this.palette = isOneOf(PALETTES, palette) ? palette : defaults.palette;
@@ -96,6 +124,31 @@ class PreferencesStore {
     this.dockPromptDismissed =
       typeof dockPromptDismissed === "boolean" ? dockPromptDismissed : defaults.dockPromptDismissed;
     this.locale = isOneOf(LOCALES, locale) ? locale : defaults.locale;
+    this.recentFilesLimit =
+      typeof recentFilesLimit === "number" &&
+      Number.isInteger(recentFilesLimit) &&
+      recentFilesLimit >= appConfig.behavior.recentFilesLimitMin &&
+      recentFilesLimit <= appConfig.behavior.recentFilesLimitMax
+        ? recentFilesLimit
+        : defaults.recentFilesLimit;
+    this.aiChatEnabled = typeof aiChatEnabled === "boolean" ? aiChatEnabled : defaults.aiChatEnabled;
+    this.aiProvider = isOneOf(AI_PROVIDERS, aiProvider) ? aiProvider : defaults.aiProvider;
+    // AI-SEC-001: un valor corrupto/editado a mano en disco que no sea ""
+    // (sin configurar) ni `https://` cae al default, igual que cualquier
+    // otra preferencia inválida (CFG-004) — el rechazo activo al escribir
+    // vive en `setAiBaseUrl`.
+    this.aiBaseUrl =
+      typeof aiBaseUrl === "string" && (aiBaseUrl === "" || aiBaseUrl.startsWith("https://"))
+        ? aiBaseUrl
+        : defaults.aiBaseUrl;
+    this.aiModelId = typeof aiModelId === "string" ? aiModelId : defaults.aiModelId;
+    this.aiByokContextTokens =
+      typeof aiByokContextTokens === "number" &&
+      Number.isInteger(aiByokContextTokens) &&
+      aiByokContextTokens >= appConfig.behavior.aiByokContextTokensMin
+        ? aiByokContextTokens
+        : defaults.aiByokContextTokens;
+    this.aiUseLocalModel = typeof aiUseLocalModel === "boolean" ? aiUseLocalModel : defaults.aiUseLocalModel;
   }
 
   #applyDom(): void {
@@ -193,6 +246,66 @@ class PreferencesStore {
     void this.#persist("locale", locale);
   }
 
+  /** SPEC-CORE-021/PD-56: cantidad de archivos visibles en `RecentFilesList`. */
+  setRecentFilesLimit(limit: number): void {
+    const clamped = Math.min(
+      appConfig.behavior.recentFilesLimitMax,
+      Math.max(appConfig.behavior.recentFilesLimitMin, limit),
+    );
+    this.recentFilesLimit = clamped;
+    void this.#persist("recentFilesLimit", clamped);
+  }
+
+  /** UI-SCREENS §10/PD-65: switch maestro — apagarlo suelta el modelo local
+   * de RAM en `ai-model.svelte.ts` (efecto separado, mismo patrón que
+   * `syncFileWatchers` para `watchFiles`, ver AppShell.svelte). */
+  setAiChatEnabled(enabled: boolean): void {
+    this.aiChatEnabled = enabled;
+    void this.#persist("aiChatEnabled", enabled);
+  }
+
+  /** PD-83: elegir un preset con URL fija precarga `aiBaseUrl` (editable
+   * después); "ninguno"/"personalizado" la dejan como estaba. */
+  setAiProvider(provider: AiProvider): void {
+    this.aiProvider = provider;
+    void this.#persist("aiProvider", provider);
+    if (provider !== "none" && provider !== "custom") {
+      this.#applyAiBaseUrl(appConfig.ai.presetBaseUrls[provider]);
+    }
+  }
+
+  #applyAiBaseUrl(url: string): void {
+    this.aiBaseUrl = url;
+    void this.#persist("aiBaseUrl", url);
+  }
+
+  /** AI-SEC-001: rechaza al guardar cualquier `aiBaseUrl` que no sea
+   * `https://` (o vacía, "sin configurar") — devuelve si se aplicó. */
+  setAiBaseUrl(url: string): boolean {
+    if (url !== "" && !url.startsWith("https://")) return false;
+    this.#applyAiBaseUrl(url);
+    return true;
+  }
+
+  setAiModelId(modelId: string): void {
+    this.aiModelId = modelId;
+    void this.#persist("aiModelId", modelId);
+  }
+
+  /** PD-70/BL-124: entero positivo — 0/negativos/no-enteros se recortan al
+   * mínimo válido en vez de guardarse (mismo criterio de clamp que
+   * `setEditorFontSize`/`setRecentFilesLimit`). */
+  setAiByokContextTokens(tokens: number): void {
+    const clamped = Math.max(appConfig.behavior.aiByokContextTokensMin, Math.trunc(tokens));
+    this.aiByokContextTokens = clamped;
+    void this.#persist("aiByokContextTokens", clamped);
+  }
+
+  setAiUseLocalModel(enabled: boolean): void {
+    this.aiUseLocalModel = enabled;
+    void this.#persist("aiUseLocalModel", enabled);
+  }
+
   /** UI-SCREENS §8: botón "Restablecer valores predeterminados". */
   resetToDefaults(): void {
     this.setThemeMode(defaults.themeMode);
@@ -204,6 +317,13 @@ class PreferencesStore {
     this.setDefaultViewMode(defaults.defaultViewMode);
     this.setWatchFiles(defaults.watchFiles);
     this.setLocale(defaults.locale);
+    this.setRecentFilesLimit(defaults.recentFilesLimit);
+    this.setAiChatEnabled(defaults.aiChatEnabled);
+    this.setAiProvider(defaults.aiProvider);
+    this.#applyAiBaseUrl(defaults.aiBaseUrl);
+    this.setAiModelId(defaults.aiModelId);
+    this.setAiByokContextTokens(defaults.aiByokContextTokens);
+    this.setAiUseLocalModel(defaults.aiUseLocalModel);
     // dockPromptDismissed (mac) no se restablece aquí a propósito: PD-28 es
     // "una vez"; "Restablecer" no debe reabrir el aviso de Dock por sorpresa.
     // El botón dedicado de Preferencias → Sistema ya cubre ese caso.

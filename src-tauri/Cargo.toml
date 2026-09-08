@@ -1,9 +1,13 @@
 [package]
 name = "mdviedit"
-version = "1.0.0"
+version = "1.1.0"
 description = "MDviedit — editor y visor de Markdown de escritorio"
 authors = ["Sebastian"]
 edition = "2021"
+# BUG-11 (seguimiento): `required-features` en el bin de abajo saca a
+# `ai_local_harness` de `tauri build`, pero `cargo run`/`pnpm tauri dev`
+# sigue listando ambos binarios y falla por ambigüedad sin esto.
+default-run = "mdviedit"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -13,6 +17,28 @@ edition = "2021"
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
 name = "mdviedit_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
+
+# BUG-05/BUG-11: `ai_local_harness` (arnés de verificación de BL-110, no la
+# app) compitiendo como candidato a "binario principal" junto a `mdviedit`
+# es justo lo que hace que `pnpm tauri build` empaquete el equivocado en
+# builds incrementales cacheados — `mainBinaryName` (app.config.ts/
+# tauri.conf.json) no bastó para resolverlo de raíz. `required-features` lo
+# saca por completo de la lista de binarios que `cargo build`/`tauri build`
+# normal siquiera considera: sin el feature, no compila, no es candidato,
+# no hay ambigüedad que Tauri pueda resolver mal.
+[[bin]]
+name = "ai_local_harness"
+path = "src/bin/ai_local_harness.rs"
+required-features = ["local-harness"]
+
+[features]
+default = []
+# Compilar/correr el arnés de verificación de BL-110 (PD-72): sin este
+# feature, `ai_local_harness` no se compila con `cargo build`/`pnpm tauri
+# build` normal.
+#   cargo build --release --features local-harness --bin ai_local_harness
+#   cargo run --features local-harness --bin ai_local_harness -- <ruta-destino-del-modelo.gguf>
+local-harness = []
 
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
@@ -27,6 +53,13 @@ tauri-plugin-fs = { version = "2.5.2", features = ["watch"] }
 tauri-plugin-store = "2.4.4"
 tauri-plugin-window-state = "2.4.1"
 tauri-plugin-cli = "2.4.1"
+sha2 = "0.11.0"
+keyring = { version = "4.2.0", features = ["apple-native-keyring-store"] }
+tokio = { version = "1.53.1", features = ["rt-multi-thread", "macros", "sync"] }
+reqwest = { version = "0.13.4", default-features = false, features = ["json", "stream", "rustls"] }
+futures-util = { version = "0.3.34", default-features = false, features = ["std"] }
+llama-cpp-2 = "0.1.156"
+encoding_rs = "0.8.35"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2.4.4"

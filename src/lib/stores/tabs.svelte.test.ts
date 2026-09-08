@@ -59,6 +59,47 @@ describe("TabsStore", () => {
     expect(store.active?.path).toBe("a.md");
   });
 
+  it("abrir un .py/.json fuerza viewMode raw sin importar defaultViewMode (BL-126/PD-86)", async () => {
+    invokeMock.mockImplementation(async (cmd: string) => (cmd === "read_text_file" ? "print('hola')" : undefined));
+    await store.openPaths(["script.py"]);
+    expect(store.active?.viewMode).toBe("raw");
+
+    invokeMock.mockImplementation(async (cmd: string) => (cmd === "read_text_file" ? "{}" : undefined));
+    await store.openPaths(["data.json"]);
+    expect(store.active?.viewMode).toBe("raw");
+  });
+
+  it("setViewMode no tiene efecto sobre una pestaña de código (SPEC-CORE-023/PD-86)", async () => {
+    invokeMock.mockImplementation(async (cmd: string) => (cmd === "read_text_file" ? "print('hola')" : undefined));
+    await store.openPaths(["script.py"]);
+    const tab = store.active;
+    if (!tab) throw new Error("sin pestaña activa");
+
+    store.setViewMode(tab.id, "formatted");
+
+    expect(tab.viewMode).toBe("raw");
+  });
+
+  it("crear un archivo nuevo de cada tipo vía Guardar como (BL-126): la ruta guardada decide editMode", async () => {
+    for (const filename of ["nuevo.py", "nuevo.json", "nuevo.js", "nuevo.ts", "nuevo.yaml", "nuevo.yml", "nuevo.css", "nuevo.html"]) {
+      const localStore = new TabsStore();
+      dialogMocks.save.mockResolvedValue(filename);
+      localStore.newTab();
+      const tab = localStore.active;
+      if (!tab) throw new Error("sin pestaña activa");
+      // SPEC-CORE-002: "Nuevo" siempre arranca en Markdown (sin ruta aún),
+      // con el viewMode por defecto de Preferencias (formatted, SPEC-CORE-011).
+      expect(tab.viewMode).toBe("formatted");
+      localStore.setContent(tab.id, "contenido");
+
+      const saved = await localStore.save(tab.id);
+
+      expect(saved).toBe(true);
+      expect(tab.path).toBe(filename);
+      expect(invokeMock).toHaveBeenCalledWith("write_text_file_atomic", { path: filename, contents: "contenido" });
+    }
+  });
+
   it("guardar una pestaña nueva sin ruta delega a Guardar como (AT-017)", async () => {
     dialogMocks.save.mockResolvedValue("nuevo.md");
     store.newTab();
