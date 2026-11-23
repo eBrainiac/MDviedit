@@ -1,15 +1,15 @@
 # MDviedit
 
-Editor y visor de Markdown de escritorio para Windows y macOS, con vistas Formato (WYSIWYG) y Sin formato, pestañas, y tres paletas de color con modo claro/oscuro.
+Desktop Markdown editor and viewer for Windows and macOS, with Formatted (WYSIWYG) and Plain text views, tabs, and three color palettes with light/dark mode.
 
-## Requisitos
+## Requirements
 
 - [pnpm](https://pnpm.io/)
-- [Rust estable](https://www.rust-lang.org/tools/install) (toolchain MSVC en Windows)
-- En Windows: Microsoft C++ Build Tools ("Desktop development with C++")
-- En macOS: Xcode
+- [Stable Rust](https://www.rust-lang.org/tools/install) (MSVC toolchain on Windows)
+- On Windows: Microsoft C++ Build Tools ("Desktop development with C++")
+- On macOS: Xcode
 
-## Desarrollo
+## Development
 
 ```sh
 pnpm install
@@ -22,6 +22,6 @@ pnpm tauri dev
 pnpm tauri build
 ```
 
-## Licencia
+## License
 
-MIT — ver [LICENSE](./LICENSE).
+MIT — see [LICENSE](./LICENSE).
